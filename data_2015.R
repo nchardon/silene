@@ -48,12 +48,15 @@ setwd("~/Desktop/Research/silene/data_2015")
 
 ## ORGANIZE DATA ## -----------------------------------------------------------
 #read in data
-size15 <- read.csv('size_2015b.csv')
-cover15 <- read.csv('cover_2015d.csv')
+size15 <- read.csv('size_2015b.csv', stringsAsFactors = F)
+cover15 <- read.csv('cover_2015d.csv', stringsAsFactors = F)
 
 #create unique id per quad
 size15$unique <- paste(size15$id, size15$trans, size15$quad, sep='_')
 cover15$unique <- paste(cover15$id, cover15$trans, cover15$quad, sep='_')
+
+#check that both dataframes match
+cover15[!cover15$unique%in%size15$unique,]
 
 #match cover to size
 cover152size15 <- match(size15$unique, cover15$unique)
@@ -64,16 +67,13 @@ size15$med_dist <- cover15$med[cover152size15]
 size15$hi_dist <- cover15$hi[cover152size15]
 #size15$low_dist[which(size15$low_dist>100)] <- NA #turn >100% cover to NA
 
-#delete NA columns and NA rows
-cover15 <- cover15[-(21:26)]
-cover15 <- cover15[-(1532:2031),]
-
 #calculate cushion area in cm^2 
 #A = ((pi * maj/2 * min/2)*(1-(miss/100)))*0.01
 size15$maj <- as.numeric(size15$maj)
 size15$min <- as.numeric(size15$min)
 size15$miss <- as.numeric(size15$miss)
-size15$area <- ((3.14*size15$maj/2*size15$min/2)*(1-(size15$miss/100)))*0.01
+size15$area <- ((3.14*(size15$maj/2)*(size15$min/2))*
+                        (1-(size15$miss/100)))*0.01
 
 #make column with presence/absence data
 for (i in 1:dim(size15)[1]) {
@@ -107,7 +107,7 @@ rownames(id_numb) <- c('bel', 'bie', 'dem', 'den', 'eln', 'els', 'eva', 'evw', '
                        'niw', 'ele', 'han', 'kin', 'mam')
 colnames(id_numb) <- c('1','2','3','4','5','6','7','8','9','10','11','12')
 
-#density measures per dist/undist and hi/lo for complete sites (long system time)
+#density measures per dist/undist and hi/lo for complete sites (syst=40min)
 id_names <- c('bel', 'bie', 'dem', 'den', 'eln', 'els', 'eva', 'evw', 'gra', 
               'qua', 'red', 'she', 'squ', 'sun', 'yal', 
               'niw', 'ele', 'han', 'kin', 'mam')
@@ -117,218 +117,70 @@ for(i in 1:20) {
 }
 colnames(sums) <- c('site', 'total')
 
-for(i in 1:length(id_names[1:15])) { #this loop only works for first 15 sites
+for(i in 1:length(id_names)) {
         foo <- size15[which(size15$id==id_names[i]),]
         for(j in 1:nrow(foo)) {
                 subfoo <- subset(foo, low_elev==1) #low elev
                 for(k in 1:nrow(subfoo)) {
                         subbfoo <- subset(subfoo, trail==1) #trail
+                        areatot <- sum(subbfoo$area, na.rm=T)
+                        transtot <- length(unique(subbfoo$trans))*100000
                         #total density
-                        sums$lt_dens[i] <- sum(subbfoo$area, na.rm=T)/
-                                (max(subbfoo$trans, na.rm=T)*100000) 
+                        sums$lt_dens[i] <- areatot/transtot
                         #relative density (area out of quads with plants)
-                        bar <- unique(subbfoo$trans) #id all trans
-                        foosum <- data.frame(bar) #create df for trans totals
                         nafoo <- subbfoo[is.na(subbfoo$area)==F,] #take out NAs
-                        for (l in 1:length(bar)) { #loop through each trans
-                                baz <- subbfoo[which(subbfoo$trans==bar[l]),]
-                                foosum$area[l] <- sum(baz$area, na.rm=T) #trans area
-                                foosum$quads[l] <- length(unique(baz$quad)) #trans quads
-                        }
-                        sums$lt_reldens[i] <- sum(foosum$area)/(sum(foosum$quads)*10000) 
-                        sums$lt_total[i] <- nrow(nafoo) #total plants
+                        quadstot <- length(unique(subbfoo$unique))*10000
+                        sums$lt_reldens[i] <- areatot/quadstot
+                        #total plants
+                        sums$lt_total[i] <- nrow(nafoo) 
                 }
                 for(k in 1:nrow(subfoo)) {
                         subbfoo <- subset(subfoo, trail==0) #notrail
-                        sums$lnt_dens[i] <- sum(subbfoo$area, na.rm=T)/
-                                (max(subbfoo$trans, na.rm=T)*100000)
-                        bar <- unique(subbfoo$trans) 
-                        foosum <- data.frame(bar) 
-                        nafoo <- subbfoo[is.na(subbfoo$area)==F,]
-                        for (l in 1:length(bar)) { 
-                                baz <- subbfoo[which(subbfoo$trans==bar[l]),]
-                                foosum$area[l] <- sum(baz$area, na.rm=T) 
-                                foosum$quads[l] <- length(unique(baz$quad)) 
-                        }
-                        sums$lnt_reldens[i] <- sum(foosum$area)/(sum(foosum$quads)*10000) 
-                        sums$lnt_total[i] <- nrow(nafoo)
-                }
-        }
-        for(j in 1:nrow(foo)) {
-                subfoo <- subset(foo, low_elev==0) #high elev
-                for(k in 1:nrow(subfoo)) {
-                        subbfoo <- subset(subfoo, trail==1) #trail
-                        sums$ht_dens[i] <- sum(subbfoo$area, na.rm=T)/
-                                (max(subbfoo$trans, na.rm=T)*100000)
-                        bar <- unique(subbfoo$trans) 
-                        foosum <- data.frame(bar) 
-                        nafoo <- subbfoo[is.na(subbfoo$area)==F,]
-                        for (l in 1:length(bar)) { 
-                                baz <- subbfoo[which(subbfoo$trans==bar[l]),]
-                                foosum$area[l] <- sum(baz$area, na.rm=T) 
-                                foosum$quads[l] <- length(unique(baz$quad)) 
-                        }
-                        sums$ht_reldens[i] <- sum(foosum$area)/(sum(foosum$quads)*10000) 
-                        sums$ht_total[i] <- nrow(nafoo)
-                }
-                for(k in 1:nrow(subfoo)) {
-                        subbfoo <- subset(subfoo, trail==0) #notrail
-                        sums$hnt_dens[i] <- sum(subbfoo$area, na.rm=T)/
-                                (max(subbfoo$trans, na.rm=T)*100000)
-                        bar <- unique(subbfoo$trans) 
-                        foosum <- data.frame(bar) 
-                        nafoo <- subbfoo[is.na(subbfoo$area)==F,]
-                        for (l in 1:length(bar)) { 
-                                baz <- subbfoo[which(subbfoo$trans==bar[l]),]
-                                foosum$area[l] <- sum(baz$area, na.rm=T) 
-                                foosum$quads[l] <- length(unique(baz$quad)) 
-                        }
-                        sums$hnt_reldens[i] <- sum(foosum$area)/(sum(foosum$quads)*10000) 
-                        sums$hnt_total[i] <- nrow(nafoo)
-                }
-        }
-}
-
-#calculate high-only sites with modified loop from above: ELE, HAN
-for(i in 17:length(id_names[17:18])) { #loop through only ELE and HAN
-        foo <- size15[which(size15$id==id_names[i]),]
-        sums$lt_dens[i] <- NA #fill absent areas with NA
-        sums$lt_reldens[i] <- NA
-        sums$lt_total[i] <- NA
-        sums$lnt_dens[i] <- NA
-        sums$lnt_reldens[i] <- NA
-        sums$lnt_total[i] <- NA
-        for(j in 1:nrow(foo)) {
-                subfoo <- subset(foo, low_elev==0) #high elev
-                for(k in 1:nrow(subfoo)) {
-                        subbfoo <- subset(subfoo, trail==1) #trail
-                        sums$ht_dens[i] <- sum(subbfoo$area, na.rm=T)/
-                                (max(subbfoo$trans, na.rm=T)*100000)
-                        bar <- unique(subbfoo$trans) 
-                        foosum <- data.frame(bar) 
-                        nafoo <- subbfoo[is.na(subbfoo$area)==F,]
-                        for (l in 1:length(bar)) { 
-                                baz <- subbfoo[which(subbfoo$trans==bar[l]),]
-                                foosum$area[l] <- sum(baz$area, na.rm=T) 
-                                foosum$quads[l] <- length(unique(baz$quad)) 
-                        }
-                        sums$ht_reldens[i] <- sum(foosum$area)/(sum(foosum$quads)*10000) 
-                        sums$ht_total[i] <- nrow(nafoo)
-                }
-                for(k in 1:nrow(subfoo)) {
-                        subbfoo <- subset(subfoo, trail==0) #notrail
-                        sums$hnt_dens[i] <- sum(subbfoo$area, na.rm=T)/
-                                (max(subbfoo$trans, na.rm=T)*100000)
-                        bar <- unique(subbfoo$trans) 
-                        foosum <- data.frame(bar) 
-                        nafoo <- subbfoo[is.na(subbfoo$area)==F,]
-                        for (l in 1:length(bar)) { 
-                                baz <- subbfoo[which(subbfoo$trans==bar[l]),]
-                                foosum$area[l] <- sum(baz$area, na.rm=T) 
-                                foosum$quads[l] <- length(unique(baz$quad)) 
-                        }
-                        sums$hnt_reldens[i] <- sum(foosum$area)/(sum(foosum$quads)*10000) 
-                        sums$hnt_total[i] <- nrow(nafoo)
-                }
-        }
-}
-
-#calcuate hi undist with modified loop: KIN
-for(i in 1:length(id_names[19])) { #loop through only KIN
-        foo <- size15[which(size15$id==id_names[i]),]
-        sums$lt_dens[i] <- NA #fill absent areas with NA
-        sums$lt_reldens[i] <- NA
-        sums$lt_total[i] <- NA
-        sums$lnt_dens[i] <- NA
-        sums$lnt_reldens[i] <- NA
-        sums$lnt_total[i] <- NA
-        sums$ht_dens[i] <- NA 
-        sums$ht_reldens[i] <- NA
-        sums$ht_total[i] <- NA
-        for(j in 1:nrow(foo)) {
-                subfoo <- subset(foo, low_elev==0) #high elev
-                for(k in 1:nrow(subfoo)) {
-                        subbfoo <- subset(subfoo, trail==0) #notrail
-                        sums$hnt_dens[i] <- sum(subbfoo$area, na.rm=T)/
-                                (max(subbfoo$trans, na.rm=T)*100000)
-                        bar <- unique(subbfoo$trans) 
-                        foosum <- data.frame(bar) 
-                        nafoo <- subbfoo[is.na(subbfoo$area)==F,]
-                        for (l in 1:length(bar)) { 
-                                baz <- subbfoo[which(subbfoo$trans==bar[l]),]
-                                foosum$area[l] <- sum(baz$area, na.rm=T) 
-                                foosum$quads[l] <- length(unique(baz$quad)) 
-                        }
-                        sums$hnt_reldens[i] <- sum(foosum$area)/(sum(foosum$quads)*10000) 
-                        sums$hnt_total[i] <- nrow(nafoo)
-                }
-        }
-}
-
-#calculate hi and low dist with modified loop: MAM
-for(i in 1:length(id_names[20])) { #loop through only MAM
-        foo <- size15[which(size15$id==id_names[i]),]
-        sums$lnt_dens[i] <- NA
-        sums$lnt_reldens[i] <- NA
-        sums$lnt_total[i] <- NA
-        sums$hnt_dens[i] <- NA 
-        sums$hnt_reldens[i] <- NA
-        sums$hnt_total[i] <- NA
-        for(j in 1:nrow(foo)) {
-                subfoo <- subset(foo, low_elev==1) #low elev
-                for(k in 1:nrow(subfoo)) {
-                        subbfoo <- subset(subfoo, trail==1) #trail
-                        sums$lt_dens[i] <- sum(subbfoo$area, na.rm=T)/
-                                (max(subbfoo$trans, na.rm=T)*100000) 
-                        bar <- unique(subbfoo$trans) 
-                        foosum <- data.frame(bar)
+                        areatot <- sum(subbfoo$area, na.rm=T)
+                        transtot <- length(unique(subbfoo$trans))*100000
+                        sums$lnt_dens[i] <- areatot/transtot
                         nafoo <- subbfoo[is.na(subbfoo$area)==F,] 
-                        for (l in 1:length(bar)) { 
-                                baz <- subbfoo[which(subbfoo$trans==bar[l]),]
-                                foosum$area[l] <- sum(baz$area, na.rm=T) 
-                                foosum$quads[l] <- length(unique(baz$quad)) 
-                        }
-                        sums$lt_reldens[i] <- sum(foosum$area)/(sum(foosum$quads)*10000) 
-                        sums$lt_total[i] <- nrow(nafoo) #total plants
+                        quadstot <- length(unique(subbfoo$unique))*10000
+                        sums$lnt_reldens[i] <- areatot/quadstot
+                        sums$lnt_total[i] <- nrow(nafoo) 
                 }
         }
         for(j in 1:nrow(foo)) {
                 subfoo <- subset(foo, low_elev==0) #high elev
                 for(k in 1:nrow(subfoo)) {
                         subbfoo <- subset(subfoo, trail==1) #trail
-                        sums$ht_dens[i] <- sum(subbfoo$area, na.rm=T)/
-                                (max(subbfoo$trans, na.rm=T)*100000)
-                        bar <- unique(subbfoo$trans) 
-                        foosum <- data.frame(bar) 
-                        nafoo <- subbfoo[is.na(subbfoo$area)==F,]
-                        for (l in 1:length(bar)) { 
-                                baz <- subbfoo[which(subbfoo$trans==bar[l]),]
-                                foosum$area[l] <- sum(baz$area, na.rm=T) 
-                                foosum$quads[l] <- length(unique(baz$quad)) 
-                        }
-                        sums$ht_reldens[i] <- sum(foosum$area)/(sum(foosum$quads)*10000) 
-                        sums$ht_total[i] <- nrow(nafoo)
+                        areatot <- sum(subbfoo$area, na.rm=T)
+                        transtot <- length(unique(subbfoo$trans))*100000
+                        sums$ht_dens[i] <- areatot/transtot
+                        nafoo <- subbfoo[is.na(subbfoo$area)==F,] 
+                        quadstot <- length(unique(subbfoo$unique))*10000
+                        sums$ht_reldens[i] <- areatot/quadstot
+                        sums$ht_total[i] <- nrow(nafoo) 
+                }
+                for(k in 1:nrow(subfoo)) {
+                        subbfoo <- subset(subfoo, trail==0) #notrail
+                        areatot <- sum(subbfoo$area, na.rm=T)
+                        transtot <- length(unique(subbfoo$trans))*100000
+                        sums$hnt_dens[i] <- areatot/transtot
+                        nafoo <- subbfoo[is.na(subbfoo$area)==F,] 
+                        quadstot <- length(unique(subbfoo$unique))*10000
+                        sums$hnt_reldens[i] <- areatot/quadstot
+                        sums$hnt_total[i] <- nrow(nafoo) 
                 }
         }
 }
 
 #calculate 20 2m^2 quads per 'transect' site: NIW
-## WHY NA FOR TRANS 1? ##
 foo <- size15[which(size15$id=='niw'),]
-sums[16,]$lnt_dens <- sum(foo$area, na.rm=T)/(2*20*40000)
-bar <- unique(foo$trans)
-for (i in 1:length(bar)) {
-        foo <- foo[which(foo$trans==bar[i]),] #subset by transect
-        foo <- foo[is.na(foo$area)==F,] #take out NA areas (and thus quads)
-        foosum <- data.frame(unique(foo$trans)) #create df
-        foosum$area[i] <- sum(baz$area) #sum area per trans
-        foosum$quads[i] <- length(unique(baz$quad)) #numb. of quad per trans
-}
-sums[16,]$lnt_reldens <- sum(foosum$area)/(sum(foosum$quads)*40000) 
-sums[16,]$lnt_total <- sums[16,2] #all plants measured were lnt
-#add all area and all quads and divide for rel dens
+areatot <- sum(foo$area, na.rm=T)
+quadstot <- length(unique(foo$unique))*20000
+sums$hnt_dens[16] <- areatot/quadstot
+nafoo <- foo[is.na(foo$area)==F,] 
+quadstot <- length(unique(foo$unique))*20000
+sums$hnt_reldens[16] <- areatot/quadstot
+sums$hnt_total[16] <- nrow(nafoo)
 
-save(sums, file='sums.RData')
+save(sums, file='~/Desktop/Research/silene/r_files/sums.RData')
 
 ## QUAD SUMMARIES ## ----------------------------------------------------------
 #calculations in size15 to cover15
@@ -339,14 +191,7 @@ for (i in 1:length(foo)) {
         #quantity of measured sil per quad
         cover15$sum_meas_sil[i] <- sum(subfoo$area)
         #area sum of measured sil per quad
-        if (is.na(cover15$sum_meas_sil[i])) {
-                cover15$meas_sil[i] <- 0
-                ## FIX CODE, still returning NA ##
-        }
-        #if NA area, no sil measured so label as '0'
 }
-
-## FIX CODE, if statements not working ##
 
 #calculations in cover15
 for(i in 1:length(cover15$unique)) {
@@ -361,7 +206,8 @@ for(i in 1:length(cover15$unique)) {
         }
         else {
                 cover15$avgsmsize[i] <- NA
-                }
+        }
+        #NA if no other sil in quad
 }
 
 #calculate avgsize and avgsmsize for NIW
