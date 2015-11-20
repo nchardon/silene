@@ -172,11 +172,10 @@ dev.off()
 #2015 Data
 ############
 #set up df
-site_names <- names(summary(size15$id))
-site_names <- site_names[2:21]
+site_names <- unique(size15$id)
 gini15 <-  data.frame(site_names)
 
-#system time = 35 min
+#gini and s for dist/undist and lo/hi elev (system time = 35 min)
 for(i in 1:length(site_names)) {
         foo <- size15[which(size15$id==site_names[i]),]
         for(j in 1:nrow(foo)) {
@@ -206,39 +205,70 @@ for(i in 1:length(site_names)) {
                 }
         }
 }
-
 #NaN are for transects without plants
 save(gini15, file='gini15.RData')
 
-#Wilcoxon rank sum (aka Mann-Whitney U) test: all but one non-signficant
-wilcox.test(gini15$gini_lowtrail, gini15$gini_lownotrail)
-wilcox.test(gini15$gini_hitrail, gini15$gini_hinotrail)
-wilcox.test(gini15$s_lowtrail, gini15$s_lownotrail)
-wilcox.test(gini15$s_hitrail, gini15$s_hinotrail)
+#Wilcoxon rank sum (aka Mann-Whitney U) test: all but one signficant
+wilcox.test(gini15$gini_lowtrail, gini15$gini_lownotrail) #p-value = 0.007796
+wilcox.test(gini15$gini_hitrail, gini15$gini_hinotrail) #p-value = 0.000329
+wilcox.test(gini15$s_lowtrail, gini15$s_lownotrail) #p-value = 0.03766
+wilcox.test(gini15$s_hitrail, gini15$s_hinotrail) #p-value = 0.03515
 
-wilcox.test(gini15$gini_lowtrail, gini15$gini_hitrail, paired=F) #p-value=0.039
-wilcox.test(gini15$s_lowtrail, gini15$s_hitrail)
-wilcox.test(gini15$gini_lownotrail, gini15$gini_hinotrail)
-wilcox.test(gini15$s_lownotrail, gini15$s_hinotrail)
+wilcox.test(gini15$gini_lowtrail, gini15$gini_hitrail, paired=F) #p-value = 0.3997
+wilcox.test(gini15$s_lowtrail, gini15$s_hitrail) #p-value = 0.0134
+wilcox.test(gini15$gini_lownotrail, gini15$gini_hinotrail) #p-value = 0.0134
+wilcox.test(gini15$s_lownotrail, gini15$s_hinotrail) #p-value = 0.6193
 
 #PLOT: high transects have higher inequality 
-plot(gini15$site_names, gini15$gini_lowtrail, ylim=c(0.3,0.7))
+plot(gini15$site_names, gini15$gini_lowtrail)
 points(gini15$site_names, gini15$gini_hitrail, pch='+')
+
+#PLOT: lorenz curves
+foo <- lownotrail_df[which(lownotrail_df$id=='yal'),] #start low elev plot
+setEPS()
+postscript('~/Desktop/Research/silene/lorenz_figs/low_vs_hi_lorenz.eps')
+par(mfrow=c(2,1), pty='s')
+plot(Lc(foo$area), main='Low Elevation')
+for (i in unique(lownotrail_df$id)) {
+        foo <- subset(lownotrail_df, id==i)
+        lines(Lc(foo$area))
+}
+for (i in unique(lowtrail_df$id)) {
+        foo <- subset(lowtrail_df, id==i)
+        lines(Lc(foo$area), col='red')
+}
+
+foo <- hinotrail_df[which(hinotrail_df$id=='yal'),] #start high elev plot
+plot(Lc(foo$area), main='High Elevation')
+for (i in unique(hinotrail_df$id)) {
+        foo <- subset(hinotrail_df, id==i)
+        lines(Lc(foo$area))
+}
+for (i in unique(hitrail_df$id)) {
+        foo <- subset(hitrail_df, id==i)
+        lines(Lc(foo$area), col='red')
+}
+dev.off()
 
 #KS TESTS AND CDF: ind. plant level sig.
 #low vs. high trail: larger prop. of small plants at high
-ks.test(lowtrail_df$area, hitrail_df$area) #p-value=0.033
-lo.x <- sort(lowtrail_df$area, decreasing = FALSE)
-lo.y <- (1:length(trail.x))/length(trail.x)
-hi.x <- sort(hitrail_df$area, decreasing = FALSE)
+ks.test(lowtrail_df$area, hitrail_df$area) #p-value = 0.001076
+x <- lowtrail_df[order(lowtrail_df$area),]
+lo.x <- x[13][is.na(x$area)==F,]
+lo.y <- (1:length(lo.x))/length(lo.x)
+x <- hitrail_df[order(hitrail_df$area),]
+hi.x <- x[13][is.na(x$area)==F,]
 hi.y <- (1:length(hi.x))/length(hi.x)
 
 #low trail vs. no trail: larger prop. of smaller plants off trail
-ks.test(lowtrail_df$area, lownotrail_df$area) #p-value=0.002
-trail.x <- sort(lowtrail_df$area, decreasing = FALSE)
+ks.test(lowtrail_df$area, lownotrail_df$area) #p-value = 3.237e-07
+x <- lowtrail_df[order(lowtrail_df$area),]
+trail.x <- x[13][is.na(x$area)==F,]
 trail.y <- (1:length(trail.x))/length(trail.x)
-notrail.x <- sort(lownotrail_df$area, decreasing = FALSE)
+x <- lownotrail_df[order(lownotrail_df$area),]
+notrail.x <- x[13][is.na(x$area)==F,]
 notrail.y <- (1:length(notrail.x))/length(notrail.x)
+
 setEPS()
 postscript('~/Desktop/Research/silene/lorenz_figs/CDFs.eps')
 par(mfrow=c(2,1))
@@ -254,8 +284,37 @@ legend('bottomright', c('Low Trail', 'High Trail'), pch=c(16, 16),
        col=c('black', 'blue'))
 dev.off()
 
-ks.test(lownotrail_df$area, hinotrail_df$area) #not sig.
-ks.test(hitrail_df$area, hinotrail_df$area) #not sig.
+#low no trail vs. high no trail:
+ks.test(lownotrail_df$area, hinotrail_df$area) #p-value = 0.04203
+x <- lownotrail_df[order(lownotrail_df$area),]
+lo.x <- x[13][is.na(x$area)==F,]
+lo.y <- (1:length(lo.x))/length(lo.x)
+x <- hinotrail_df[order(hinotrail_df$area),]
+hi.x <- x[13][is.na(x$area)==F,]
+hi.y <- (1:length(hi.x))/length(hi.x)
+
+plot(lo.x, lo.y, pch=16, cex=0.4, ylab='CDF', xlab='Plant Area (cm^2)')
+points(hi.x, hi.y, pch=16, cex=0.4, col='blue')
+legend('bottomright', c('Low No Trail', 'High No Trail'), pch=c(16, 16),
+       col=c('black', 'blue'))
+
+#hi trail vs. no trail:
+ks.test(hitrail_df$area, hinotrail_df$area) #p-value < 2.2e-16
+x <- hitrail_df[order(hitrail_df$area),]
+trail.x <- x[13][is.na(x$area)==F,]
+trail.y <- (1:length(trail.x))/length(trail.x)
+x <- hinotrail_df[order(hinotrail_df$area),]
+notrail.x <- x[13][is.na(x$area)==F,]
+notrail.y <- (1:length(notrail.x))/length(notrail.x)
+
+setEPS()
+postscript('~/Desktop/Research/silene/lorenz_figs/hi_CDF.eps')
+plot(trail.x, trail.y, col='red', pch=16, cex=0.4, ylab='CDF', 
+     xlab='Plant Area (cm^2)')
+points(notrail.x, notrail.y, pch=16, cex=0.4)
+legend('bottomright', c('High Trail', 'High No Trail'), pch=c(16, 16),
+       col=c('red', 'black'))
+dev.off()
 
 #COVER DATA
 

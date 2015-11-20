@@ -18,17 +18,16 @@ load('gini15.RData')
 # 2015 Data
 ############
 
-#Wilcoxon rank sum tests: sig. diff. across low and mid-elev. sites regardless
-#of dist and b/w low elev. dist/undist, but not between dist/undist high sites
-wilcox.test(sums$lt_dens, sums$lnt_dens) #p=0.039
-wilcox.test(sums$lt_dens, sums$ht_dens) #p=0.022
-wilcox.test(sums$lnt_dens, sums$hnt_dens) #p=0.020
-wilcox.test(sums$ht_dens, sums$hnt_dens) #not sig.
+#Wilcoxon rank sum tests: sig. diff. at center and limit with dist
+wilcox.test(sums$lt_dens, sums$lnt_dens) #p=0.001673
+wilcox.test(sums$lt_dens, sums$ht_dens) #p=0.4028
+wilcox.test(sums$lnt_dens, sums$hnt_dens) #p=0.5092
+wilcox.test(sums$ht_dens, sums$hnt_dens) #p=0.0008242
 
-wilcox.test(sums$lt_reldens, sums$lnt_reldens) #p=0.039
-wilcox.test(sums$lt_reldens, sums$ht_reldens) #p=0.022
-wilcox.test(sums$lnt_reldens, sums$hnt_reldens) #p=0.018
-wilcox.test(sums$ht_reldens, sums$hnt_reldens) #not sig.
+wilcox.test(sums$lt_reldens, sums$lnt_reldens) #p=0.001673
+wilcox.test(sums$lt_reldens, sums$ht_reldens) #p=0.3653
+wilcox.test(sums$lnt_reldens, sums$hnt_reldens) #p=0.5092
+wilcox.test(sums$ht_reldens, sums$hnt_reldens) #p=0.0004204
 
 ############
 # 2014 Data

@@ -227,30 +227,18 @@ for (i in 1:length(cover15$unique)) {
 
 ## LOW/HI ELEV AND DIST/UNDIST DATAFRAMES ## -----------------------------------
 #make low_elev df 
-by_elev <- split(size15, size15$low_elev) #[2] is low elevation
-low_elev_df <- data.frame(by_elev[2])
-colnames(low_elev_df) <- c('id', 'trans', 'quad', 'maj', 'min', 'miss',
-                           'unique', 'trail', 'low_elev', 'area', 'pa')
-low_elev_df$pa <- as.numeric(low_elev_df$pa)
-hi_elev_df <- data.frame(by_elev[1])
-colnames(hi_elev_df) <- c('id', 'trans', 'quad', 'maj', 'min', 'miss',
-                           'unique', 'trail', 'low_elev', 'area', 'pa')
+by_elev <- split(size15, size15$low_elev) #$`1` is low elevation
+low_elev_df <- data.frame(by_elev$`1`)
+hi_elev_df <- data.frame(by_elev$`0`)
 
 #trail vs. no trail df's 
 lowtrail <- (split(low_elev_df, low_elev_df$trail))
-lowtrail_df <- data.frame(lowtrail[2])
-colnames(lowtrail_df) <- c('id', 'trans', 'quad', 'maj', 'min', 'miss',
-                           'unique', 'trail', 'low_elev', 'area', 'pa')
-lownotrail_df <- data.frame(lowtrail[1])
-colnames(lownotrail_df) <- c('id', 'trans', 'quad', 'maj', 'min', 'miss',
-                             'unique', 'trail', 'low_elev', 'area', 'pa')
-hitrail <- (split(hi_elev_df, hi_elev_df$trail))
-hitrail_df <- data.frame(hitrail[2])
-colnames(hitrail_df) <- c('id', 'trans', 'quad', 'maj', 'min', 'miss',
-                           'unique', 'trail', 'low_elev', 'area', 'pa')
-hinotrail_df <- data.frame(hitrail[1])
-colnames(hinotrail_df) <- c('id', 'trans', 'quad', 'maj', 'min', 'miss',
-                             'unique', 'trail', 'low_elev', 'area', 'pa')
+lowtrail_df <- data.frame(lowtrail$`1`)
+lownotrail_df <- data.frame(lowtrail$`0`)
+
+hitrail <- split(hi_elev_df, hi_elev_df$trail)
+hitrail_df <- data.frame(hitrail$`1`)
+hinotrail_df <- data.frame(hitrail$`0`)
 
 ## SAVE DATAFRAMES ## ----------------------------------------------------------
 save(lowtrail_df, file= '~/Desktop/Research/silene/r_files/lowtrail.RData')

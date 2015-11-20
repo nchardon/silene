@@ -56,19 +56,18 @@ dev.off()
 
 ## Disturbance Analyses with Summer 2015 Data
 
-#compare sizes at low elev by trail presence => not signficant!!!
-#Welch Two Sample t-test: unequal variances and sample sizes 
-t.test(lowtrail_df$area, lownotrail_df$area) 
-#p-value<0.05, df=814 (WRONG)
-#trail samples: 1140
-#no trail samples: 677
+#compare sizes at low elev by trail presence
+#Wilcoxon rank sum test
+wilcox.test(lowtrail_df$area, lownotrail_df$area) #p-value < 2.2e-16
+wilcox.test(lowtrail_df$area, hitrail_df$area) #p-value < 2.2e-16
+wilcox.test(lownotrail_df$area, hinotrail_df$area) #p-value = 0.233
+wilcox.test(hitrail_df$area, hinotrail_df$area) #p-value < 2.2e-16
 
 #quad level stats
 trail_means <- tapply(lowtrail_df$area, lowtrail_df$unique, mean, na.rm = TRUE)
 notrail_means <- tapply(lownotrail_df$area, lownotrail_df$unique, 
                         mean, na.rm = TRUE)
-t.test(trail_means, notrail_means)
-#p-value=0.038, df=245 (WRONG)
+wilcox.test(trail_means, notrail_means) #p-value < 2.2e-16
 
 #CDF plot with quad means (FIGURE 3) => different fig. than in poster!!!
 #need to use ind. plant data (sig.), see 'estimators.R'
@@ -82,6 +81,7 @@ plot(trail.x, trail.y,
      type = 'l', lty=2, xlab='', ylab='')
 lines(notrail.x, notrail.y)
 dev.off()
+ks.test(trail_means, notrail_means) #p-value < 2.2e-16
 
 ###############################################################################
 ## Analyses and Figs not used in poster:
