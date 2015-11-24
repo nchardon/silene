@@ -251,15 +251,6 @@ for (i in unique(hitrail_df$id)) {
 dev.off()
 
 #KS TESTS AND CDF: ind. plant level sig.
-#low vs. high trail: larger prop. of small plants at high
-ks.test(lowtrail_df$area, hitrail_df$area) #p-value = 0.001076
-x <- lowtrail_df[order(lowtrail_df$area),]
-lo.x <- x[13][is.na(x$area)==F,]
-lo.y <- (1:length(lo.x))/length(lo.x)
-x <- hitrail_df[order(hitrail_df$area),]
-hi.x <- x[13][is.na(x$area)==F,]
-hi.y <- (1:length(hi.x))/length(hi.x)
-
 #low trail vs. no trail: larger prop. of smaller plants off trail
 ks.test(lowtrail_df$area, lownotrail_df$area) #p-value = 3.237e-07
 x <- lowtrail_df[order(lowtrail_df$area),]
@@ -270,7 +261,7 @@ notrail.x <- x[13][is.na(x$area)==F,]
 notrail.y <- (1:length(notrail.x))/length(notrail.x)
 
 setEPS()
-postscript('~/Desktop/Research/silene/lorenz_figs/CDFs.eps')
+postscript('~/Desktop/Research/silene/lorenz_figs/hiandlotrailvnotrail.eps')
 par(mfrow=c(2,1))
 plot(trail.x, trail.y, col='red', pch=16, cex=0.4, ylab='CDF', 
      xlab='Plant Area (cm^2)')
@@ -278,10 +269,20 @@ points(notrail.x, notrail.y, pch=16, cex=0.4)
 legend('bottomright', c('Low Trail', 'Low No Trail'), pch=c(16, 16),
        col=c('red', 'black'))
 
-plot(lo.x, lo.y, pch=16, cex=0.4, ylab='CDF', xlab='Plant Area (cm^2)')
-points(hi.x, hi.y, pch=16, cex=0.4, col='blue')
-legend('bottomright', c('Low Trail', 'High Trail'), pch=c(16, 16),
-       col=c('black', 'blue'))
+#hi trail vs. no trail:
+ks.test(hitrail_df$area, hinotrail_df$area) #p-value < 2.2e-16
+x <- hitrail_df[order(hitrail_df$area),]
+trail.x <- x[13][is.na(x$area)==F,]
+trail.y <- (1:length(trail.x))/length(trail.x)
+x <- hinotrail_df[order(hinotrail_df$area),]
+notrail.x <- x[13][is.na(x$area)==F,]
+notrail.y <- (1:length(notrail.x))/length(notrail.x)
+
+plot(trail.x, trail.y, col='red', pch=16, cex=0.4, ylab='CDF', 
+     xlab='Plant Area (cm^2)')
+points(notrail.x, notrail.y, pch=16, cex=0.4)
+legend('bottomright', c('High Trail', 'High No Trail'), pch=c(16, 16),
+       col=c('red', 'black'))
 dev.off()
 
 #low no trail vs. high no trail:
@@ -293,28 +294,25 @@ x <- hinotrail_df[order(hinotrail_df$area),]
 hi.x <- x[13][is.na(x$area)==F,]
 hi.y <- (1:length(hi.x))/length(hi.x)
 
+setEPS()
+postscript('~/Desktop/Research/silene/lorenz_figs/hivlotrailandnotrail.eps')
+par(mfrow=c(2,1))
 plot(lo.x, lo.y, pch=16, cex=0.4, ylab='CDF', xlab='Plant Area (cm^2)')
 points(hi.x, hi.y, pch=16, cex=0.4, col='blue')
 legend('bottomright', c('Low No Trail', 'High No Trail'), pch=c(16, 16),
        col=c('black', 'blue'))
 
-#hi trail vs. no trail:
-ks.test(hitrail_df$area, hinotrail_df$area) #p-value < 2.2e-16
+#low vs. high trail: larger prop. of small plants at high
+ks.test(lowtrail_df$area, hitrail_df$area) #p-value = 0.001076
+x <- lowtrail_df[order(lowtrail_df$area),]
+lo.x <- x[13][is.na(x$area)==F,]
+lo.y <- (1:length(lo.x))/length(lo.x)
 x <- hitrail_df[order(hitrail_df$area),]
-trail.x <- x[13][is.na(x$area)==F,]
-trail.y <- (1:length(trail.x))/length(trail.x)
-x <- hinotrail_df[order(hinotrail_df$area),]
-notrail.x <- x[13][is.na(x$area)==F,]
-notrail.y <- (1:length(notrail.x))/length(notrail.x)
+hi.x <- x[13][is.na(x$area)==F,]
+hi.y <- (1:length(hi.x))/length(hi.x)
 
-setEPS()
-postscript('~/Desktop/Research/silene/lorenz_figs/hi_CDF.eps')
-plot(trail.x, trail.y, col='red', pch=16, cex=0.4, ylab='CDF', 
-     xlab='Plant Area (cm^2)')
-points(notrail.x, notrail.y, pch=16, cex=0.4)
-legend('bottomright', c('High Trail', 'High No Trail'), pch=c(16, 16),
-       col=c('red', 'black'))
+plot(lo.x, lo.y, pch=16, cex=0.4, ylab='CDF', xlab='Plant Area (cm^2)')
+points(hi.x, hi.y, pch=16, cex=0.4, col='blue')
+legend('bottomright', c('Low Trail', 'High Trail'), pch=c(16, 16),
+       col=c('black', 'blue'))
 dev.off()
-
-#COVER DATA
-

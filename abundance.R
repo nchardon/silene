@@ -21,13 +21,60 @@ load('gini15.RData')
 #Wilcoxon rank sum tests: sig. diff. at center and limit with dist
 wilcox.test(sums$lt_dens, sums$lnt_dens) #p=0.001673
 wilcox.test(sums$lt_dens, sums$ht_dens) #p=0.4028
-wilcox.test(sums$lnt_dens, sums$hnt_dens) #p=0.5092
-wilcox.test(sums$ht_dens, sums$hnt_dens) #p=0.0008242
+wilcox.test(sums$lnt_dens, sums$hnt_dens) #p=0.0.5548
+wilcox.test(sums$ht_dens, sums$hnt_dens) #p=0.000528
 
 wilcox.test(sums$lt_reldens, sums$lnt_reldens) #p=0.001673
 wilcox.test(sums$lt_reldens, sums$ht_reldens) #p=0.3653
-wilcox.test(sums$lnt_reldens, sums$hnt_reldens) #p=0.5092
-wilcox.test(sums$ht_reldens, sums$hnt_reldens) #p=0.0004204
+wilcox.test(sums$lnt_reldens, sums$hnt_reldens) #p=0.5548
+wilcox.test(sums$ht_reldens, sums$hnt_reldens) #p=0.0002967
+
+setEPS()
+postscript('~/Desktop/Research/silene/lorenz_figs/density.eps')
+par(mfrow=c(2,1))
+boxplot(sums$lt_dens, sums$lnt_dens, ylab='Density of 5 Largest Plants per Quad',
+        xlab='Range Limit Disturbed vs. Undisturbed')
+boxplot(sums$ht_dens, sums$hnt_dens, ylab='Density of 5 Largest Plants per Quad',
+        xlab='Range Center Disturbed vs. Undisturbed')
+dev.off()
+
+#Wilcoxon rank sum test on % cover of Silene: higher % cover at disturbed
+foo <- cover15[which(cover15$low_elev=='1'),]
+foo1 <- foo[which(foo$trail=='1'),]
+foo2 <- foo[which(foo$trail=='0'),]
+wilcox.test(foo1$sil, foo2$sil) #p-value < 2.2e-16
+
+setEPS()
+postscript('~/Desktop/Research/silene/lorenz_figs/percover.eps')
+par(mfrow=c(2,2))
+boxplot(foo1$sil, foo2$sil, xlab='Range Limit Disturbed vs. Undisturbed', 
+        ylab='% Cover Silene')
+
+foo <- cover15[which(cover15$low_elev=='0'),]
+foo1 <- foo[which(foo$trail=='1'),]
+foo2 <- foo[which(foo$trail=='0'),]
+wilcox.test(foo1$sil, foo2$sil) #p-value < 2.2e-16
+boxplot(foo1$sil, foo2$sil, xlab='Range Center Disturbed vs. Undisturbed', 
+        ylab='% Cover Silene')
+
+foo <- cover15[which(cover15$low_elev=='0'),]
+foo1 <- foo[which(foo$trail=='1'),]
+foo <- cover15[which(cover15$low_elev=='1'),]
+foo2 <- foo[which(foo$trail=='1'),]
+wilcox.test(foo1$sil, foo2$sil) #p-value = 0.0007644
+boxplot(foo1$sil, foo2$sil, 
+        xlab='Range Center Disturbed vs. Range Limit Disturbed', 
+        ylab='% Cover Silene')
+
+foo <- cover15[which(cover15$low_elev=='0'),]
+foo1 <- foo[which(foo$trail=='0'),]
+foo <- cover15[which(cover15$low_elev=='1'),]
+foo2 <- foo[which(foo$trail=='0'),]
+wilcox.test(foo1$sil, foo2$sil) #p-value = 0.005
+boxplot(foo1$sil, foo2$sil, 
+        xlab='Range Center Undisturbed vs. Range Limit Undisturbed', 
+        ylab='% Cover Silene')
+dev.off()
 
 ############
 # 2014 Data
@@ -48,5 +95,9 @@ plot(sums14_na$ros~sums14_na$lat)
 abline(fit)
 
 fit <- lm(sums14_na$ros~sums14_na$elev) #p=0.02, r^2=0.56
-plot(sums14_na$ros~sums14_na$elev)
+setEPS()
+postscript('~/Desktop/Research/silene/lorenz_figs/rosettes.eps')
+plot(sums14_na$ros~sums14_na$elev, xlab='Elevation (m)', 
+     ylab='Small Plants (<20 rosettes) as % of Population')
 abline(fit)
+dev.off()

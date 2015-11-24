@@ -170,13 +170,13 @@ for(i in 1:length(id_names)) {
         }
 }
 
-#calculate 20 2m^2 quads per 'transect' site: NIW
+#calculate 20 4m^2 quads per 'transect' site: NIW
 foo <- size15[which(size15$id=='niw'),]
 areatot <- sum(foo$area, na.rm=T)
-quadstot <- length(unique(foo$unique))*20000
+quadstot <- length(unique(foo$unique))*40000
 sums$hnt_dens[16] <- areatot/quadstot
 nafoo <- foo[is.na(foo$area)==F,] 
-quadstot <- length(unique(foo$unique))*20000
+quadstot <- length(unique(foo$unique))*40000
 sums$hnt_reldens[16] <- areatot/quadstot
 sums$hnt_total[16] <- nrow(nafoo)
 
