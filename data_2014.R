@@ -76,6 +76,17 @@ size$min <- as.numeric(size$min)
 size$miss <- as.numeric(size$miss)
 size$areacm <- ((3.14*size$maj/2*size$min/2)*(1-(size$miss/100)))
 
+#assign area to rosettes
+#average ros area = 16.9mm^2 = 0.169cm^2
+for(i in 1:length(size$ros)) {
+        if(is.na(size$ros[i])) {
+                size$ros[i] <- '0'
+        }
+        else if(size$ros[i]>0) {
+                size$areacm[i] <- as.numeric(size$ros[i])*0.169
+        }
+}
+
 # save cover dataframes
 save(cover, file='~/Desktop/Research/silene/r_files/cover.RData')
 
