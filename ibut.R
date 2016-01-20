@@ -12,6 +12,8 @@ load(ibut_dat, file='~/Desktop/Research/silene/r_files/ibut_dat.RData')
 # load library
 library(abind) #package necessary to combine arrays
 
+#take out NA values: file 32AD11.csv taken out of raw data
+
 # read in files with '%d.%m.%y %H:%M:%S' date format
 setwd("~/Desktop/Research/silene/ibuttons_2014/nat")
 fileList_nat <- list.files(path = "~/Desktop/Research/silene/ibuttons_2014/nat", 

@@ -7,8 +7,8 @@ load('~/Desktop/Research/silene/r_files/ibut.RData')
 load('~/Desktop/Research/silene/r_files/ibut_table.RData')
 load('~/Desktop/Research/silene/r_files/table.RData') 
 #ibut_table with correct date format
-load(ibut_dat, file='~/Desktop/Research/silene/r_files/ibut_dat.RData') 
-#ibutton id matched with lat, long, elev, and site
+load('~/Desktop/Research/silene/r_files/ibut_dat.RData') 
+#ibutton id with lat, long, elev, site, and summer climate averages
 
 # start table 5 days after implementation (start at row 28 in [row,1,i])
 table_cut <- table[28:dim(table)[1],,]
@@ -18,13 +18,13 @@ ibut_gro <- array(NA, dim=c(dim(table_cut)[1], 3, dim(table_cut)[3]))
 #create empty array to match table array dim.
 for (i in 1:dim(table_cut)[3]) {
         for (j in 1:dim(table_cut)[1]) {
-                if(table_cut[j,3,i] == '06') {
+                if(table_cut[j,3,i] == '6') {
                         ibut_gro[j,1,i] <- table_cut[j,2,i] #add date row if true
                 }
-                else if(table_cut[j,3,i] == '07') {
+                else if(table_cut[j,3,i] == '7') {
                         ibut_gro[j,2,i] <- table_cut[j,2,i]
                 }
-                else if(table_cut[j,3,i] == '08') {
+                else if(table_cut[j,3,i] == '8') {
                         ibut_gro[j,3,i] <- table_cut[j,2,i] 
                 }
         }
@@ -51,6 +51,12 @@ aug_max <- apply(ibut_gro[,3,], MARGIN=2, FUN=max, na.rm=T)
 ibut_dat$junmax <- jun_max
 ibut_dat$julmax <- jul_max
 ibut_dat$augmax <- aug_max
+
+#save df
+save(ibut_dat, file='~/Desktop/Research/silene/r_files/ibut_dat.RData')
+#ibutton id matched with lat, long, elev, and site
+
+# ==============================================================================
 
 # STOP 9/24/15: how best to structure array?
 # length of growing season (no. of days with daily high temp > 5C)

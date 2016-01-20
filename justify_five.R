@@ -83,7 +83,7 @@ for(i in 1:length(unique(size$id))) {
                 fives$max[i] <- ordered[1]
                 fives$mean[i] <- mean(ordered[1:5])
                 fives$median[i] <- median(ordered[1:5])
-                #fives$cv_five[i] <- cv(ordered[1:5])
+                fives$cv_five[i] <- cv(ordered[1:5], na.rm=T)
         }
         else { #calculations for quads with <= 5 plants
                 fives$min[i] <- min(ordered)
@@ -94,7 +94,7 @@ for(i in 1:length(unique(size$id))) {
         fives$two[i] <- ordered[2]
         fives$three[i] <- ordered[3]
         fives$four[i] <- ordered[4]
-        fives$cv_all[i] <- cv(bar)
+        fives$cv_all[i] <- cv(bar, na.rm=T)
         fives$cv_expl[i] <- fives$cv_five[i]/fives$cv_all[i]*100 #% of cv explained
 }
 fives$site <- substr(as.character(fives$id), 1, 3)
@@ -118,3 +118,32 @@ plot(estdens~mean_maxs, data=means)
 dev.off()
 
 #calculate % of plants in diff. size classes ===================================
+# Proportion of plants in each size class to match Silene matrices size dist.
+# Breaks = size classes from Doak & Morris (pers.comm. Apr. 2015)
+# average ros area = 16.9mm^2 = 0.169cm^2
+site <- means$site
+for(i in 1:length(site)) {
+        foo <- size[which(size$site==site[i]),]
+        histo <- hist(foo$areacm, plot = F, 
+            breaks = c(0, 0.845, 0.169, 3.211, 12.5, 25, 50, 100, 200, 3461.85))
+        means$hist1[i] <- histo$counts[1]/means$sitetotal[i]*100 #perc. in class
+        means$hist2[i] <- histo$counts[2]/means$sitetotal[i]*100
+        means$hist3[i] <- histo$counts[3]/means$sitetotal[i]*100
+        means$hist4[i] <- histo$counts[4]/means$sitetotal[i]*100
+        means$hist5[i] <- histo$counts[5]/means$sitetotal[i]*100
+        means$hist6[i] <- histo$counts[6]/means$sitetotal[i]*100
+        means$hist7[i] <- histo$counts[7]/means$sitetotal[i]*100
+        means$hist8[i] <- histo$counts[8]/means$sitetotal[i]*100
+        means$hist9[i] <- histo$counts[9]/means$sitetotal[i]*100
+}
+
+#climate data ================================================================
+load('~/Desktop/Research/silene/r_files/ibut_dat.RData') 
+#ibutton id with lat, long, elev, site, and summer climate averages
+
+#STOP 20 JAN: loop should report NA where no ibuttons, not running through correctly
+site <- means$site
+for(i in 1:length(site)) {
+        foo <- ibut_dat[which(ibut_dat$site==site[i]),]
+        means$junavg[i] <- mean(foo$junavg)
+}
