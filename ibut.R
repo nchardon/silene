@@ -6,11 +6,21 @@ load('~/Desktop/Research/silene/r_files/ibut.RData')
 load('~/Desktop/Research/silene/r_files/ibut_table.RData')
 load('~/Desktop/Research/silene/r_files/table.RData') 
 #ibut_table with correct date format
-load(ibut_dat, file='~/Desktop/Research/silene/r_files/ibut_dat.RData') 
+load('~/Desktop/Research/silene/r_files/ibut_dat.RData') 
 #ibutton id matched with lat, long, elev, and site
+
+rm(list=ls())
 
 # load library
 library(abind) #package necessary to combine arrays
+library(xlsx)
+
+#write DF to Excel Spreadsheet: IN PROGRESS (WONT WRITE!)
+write.xlsx(ibut_dat, "Desktop/Research/silene/ibuttons_2014/ibut_dat.xlsx")
+#ibuttons not found
+load('~/Desktop/Research/silene/r_files/cover.RData')
+lost <- cover[!cover$ibutt%in%ibut_dat$id,]
+write.xlsx(lost, "Desktop/Research/silene/ibuttons_2014/lost.xlsx")
 
 #take out NA values: file 32AD11.csv taken out of raw data
 
@@ -92,11 +102,11 @@ load('~/Desktop/Research/silene/r_files/cover.RData')
 ibut_dat <- data.frame(id=character(length(ibut_names))) #create empty df
 ibut_dat$id <- ibut_names
 cover2ibut <- match(ibut_dat$id, cover$ibutt) #match ibut names with cover df
+ibut_dat$quad_id <- cover$id[cover2ibut]
 ibut_dat$lat <- cover$lat[cover2ibut] #add lat to ibut_dat
 ibut_dat$long <- cover$long[cover2ibut] #add long to ibut_dat
 ibut_dat$elev <- cover$elev[cover2ibut] #add elev to ibut_dat
-size2ibut <- match(ibut_dat$lat, size$lat) #match ibut lat with size lat
-ibut_dat$site <- size$site[size2ibut] #add site to ibut_dat
+ibut_dat$site <- cover$site[cover2ibut] #add site to ibut_dat
 
 # save dataframes
 save(ibut, file='~/Desktop/Research/silene/r_files/ibut.RData')

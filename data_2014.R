@@ -38,7 +38,7 @@ setwd("~/Desktop/Research/silene/data_2014")
 
 # read in data
 size <- read.csv('size_data8.csv')
-cover <- read.csv('cover_data4.csv')
+cover <- read.csv('cover_data5.csv')
 pa <- read.csv('pa_data2.csv')
 gps <- read.csv('allgps.csv')
 
@@ -54,6 +54,9 @@ head(pa)
 colnames(pa)
 head(gps)
 colnames(gps)
+size[!size$id%in%cover$id,] #check which size$id not in cover (9 raw data corr.)
+foo <- cover[which(cover$sil>0),]
+foo[!foo$id%in%size$id,] #check which cover$id not in size (12 mismatches)
 
 # add lat, long, & elevation to size dataframe
 cover2size <- match(size$id, cover$id)
@@ -63,9 +66,10 @@ size$long <- cover$long[cover2size]
 gps2size <- match(size$lat, gps$lat)
 size$elev <- gps$ele[gps2size]
 
-# add elev to cover df
+# add elev and site to cover df
 gps2cover <- match(cover$lat, gps$lat)
 cover$elev <- gps$ele[gps2cover]
+cover$site <- substr(cover$id, 1, 3)
 
 # make ibut id uppercase for matching in ibut.R
 cover$ibutt <- toupper(cover$ibutt)
